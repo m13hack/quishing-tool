@@ -13,11 +13,10 @@ install_dependencies() {
         exit 1
     fi
 
-    pip install Flask qrcode[pil]
-    if [ $? -ne 0 ]; then
+    pip install Flask qrcode[pil] || {
         echo "[ERROR] Failed to install required packages. Please check your internet connection or pip configuration."
         exit 1
-    fi
+    }
 
     echo "[INFO] Dependencies installed successfully."
 }
@@ -26,23 +25,20 @@ install_dependencies() {
 create_directories() {
     echo "[INFO] Creating necessary directories..."
 
-    mkdir -p log
-    if [ $? -ne 0 ]; then
+    mkdir -p log || {
         echo "[ERROR] Failed to create log directory. Please check your permissions."
         exit 1
-    fi
+    }
 
-    mkdir -p sites/site1/assets
-    if [ $? -ne 0 ]; then
+    mkdir -p sites/site1/assets || {
         echo "[ERROR] Failed to create site1/assets directory. Please check your permissions."
         exit 1
-    fi
+    }
 
-    mkdir -p sites/site2/assets
-    if [ $? -ne 0 ]; then
+    mkdir -p sites/site2/assets || {
         echo "[ERROR] Failed to create site2/assets directory. Please check your permissions."
         exit 1
-    fi
+    }
 
     echo "[INFO] Directories created successfully."
 }
