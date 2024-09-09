@@ -1,9 +1,6 @@
-#!/bin/bash
-
-# Make a Debian Package for your tool
-_PACKAGE="zphisher"          # Package name
-_VERSION="1.0.0"             # Version number
-_ARCH="all"                  # Architecture type (can be 'all' or a specific one like 'amd64')
+_PACKAGE="quishing-tool"         # Updated package name
+_VERSION="1.0.0"                 # Version number
+_ARCH="all"                      # Architecture type
 PKG_NAME="${_PACKAGE}_${_VERSION}_${_ARCH}.deb"  # Name of the output .deb file
 
 # Check if the `launch.sh` exists in the `scripts/` directory
@@ -42,11 +39,11 @@ cat <<- CONTROL_EOF > ./build_env/DEBIAN/control
 Package: ${_PACKAGE}
 Version: ${_VERSION}
 Architecture: ${_ARCH}
-Maintainer: @htr-tech
+Maintainer: @m13hack
 Depends: ${_depend}
-Homepage: https://github.com/htr-tech/zphisher
-Description: Zphisher is an automated phishing tool with 30+ templates.
-             This tool is made for educational purposes only. Use it responsibly!
+Homepage: https://github.com/m13hack/quishing-tool
+Description: Quishing Tool is an automated QR code phishing tool designed to help users learn about phishing techniques.
+             This tool is intended for educational purposes only. Use it responsibly!
 CONTROL_EOF
 
 # Create `prerm` script that runs before the package is removed
